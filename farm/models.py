@@ -20,3 +20,12 @@ class FarmModel(models.Model):
     def __str__(self):
         return self.name
     
+class FieldModel(models.Model):
+    farm=models.ForeignKey(FarmModel,on_delete=models.CASCADE)
+    name=models.CharField(max_length=50)
+    area=models.DecimalField(max_digits=8,decimal_places=2)
+    crop_name=models.CharField(max_length=50)
+    created_at=models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
