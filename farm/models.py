@@ -9,7 +9,7 @@ class FarmModel(models.Model):
     location=models.CharField(max_length=80)
     area=models.DecimalField(max_digits=8,decimal_places=2)
     created_at=models.DateTimeField(auto_now_add=True)
-    
+  
     def save(self, *args, **kwargs):
         if not self.name or self.name.strip() == '':
             farm_count = FarmModel.objects.count() + 1
@@ -21,7 +21,7 @@ class FarmModel(models.Model):
         return self.name
     
 class FieldModel(models.Model):
-    farm=models.ForeignKey(FarmModel,on_delete=models.CASCADE)
+    farm=models.ForeignKey(FarmModel,on_delete=models.CASCADE,related_name="field")
     name=models.CharField(max_length=50)
     area=models.DecimalField(max_digits=8,decimal_places=2)
     crop_name=models.CharField(max_length=50)
