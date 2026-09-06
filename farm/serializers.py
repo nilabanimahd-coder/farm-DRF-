@@ -9,7 +9,7 @@ class MinAreaValidator:
         self.min_price=min_price
 
     def __call__(self, value):
-        if value < self.min_price:
+        if value <= self.min_price:
             raise serializers.ValidationError("price is not be 0")
         return value
 
@@ -17,10 +17,16 @@ class FieldSerializer(serializers.ModelSerializer):
 
     def validate(self,attrs):
 
-        farm = attrs['farm']
+        farm = attrs.get('farm')
+        if not farm and self.instance:
+            farm = self.instance.farm
+
         new_area = attrs['area']
 
         used_area= sum(field.area for field in farm.field.all())
+        
+        if self.instance:
+            used_area -= self.instance.area
 
         remaining_area = farm.area - used_area
 
@@ -29,7 +35,7 @@ class FieldSerializer(serializers.ModelSerializer):
     
         return attrs
 
-    area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[validate,MinAreaValidator(0)])
+    area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
 
     class Meta:
         model=FieldModel
@@ -38,14 +44,23 @@ class FieldSerializer(serializers.ModelSerializer):
 
 
 
+class FarmListSerializer(serializers.ModelSerializer):
 
-    
-class FarmSerializer(serializers.ModelSerializer):
-
-    area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
-    fields=FieldSerializer(many=True,read_only=True)
+    field_count=serializers.IntegerField(source="field.count")
 
     class Meta:
         model=FarmModel
-        fields=['id','owner','name','area','location','fields','created_at']
-        read_only_fields = ["id","owner","created_at"]
+        fields=['id','owner','name','area','location','field_count','created_at']
+        read_only_fields = ["id","owner","created_at","field_count"]
+
+    
+class FarmDetaielSerializer(serializers.ModelSerializer):
+
+    area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
+    field=FieldSerializer(many=True,read_only=True)
+    field_count=serializers.IntegerField(source="field.count")
+
+    class Meta:
+        model=FarmModel
+        fields=['id','owner','name','area','location','field_count','field','created_at']
+        read_only_fields = ["id","owner","created_at","field_count"]
