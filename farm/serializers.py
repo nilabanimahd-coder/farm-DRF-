@@ -46,7 +46,7 @@ class FieldSerializer(serializers.ModelSerializer):
 
 class FarmListSerializer(serializers.ModelSerializer):
 
-    field_count=serializers.IntegerField(source="field.count")
+    field_count=serializers.IntegerField(source="field.count",read_only=True)
 
     class Meta:
         model=FarmModel
@@ -58,7 +58,7 @@ class FarmDetaielSerializer(serializers.ModelSerializer):
 
     area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
     field=FieldSerializer(many=True,read_only=True)
-    field_count=serializers.IntegerField(source="field.count")
+    field_count=serializers.IntegerField(source="field.count",read_only=True)
 
     class Meta:
         model=FarmModel
