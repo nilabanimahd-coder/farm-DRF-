@@ -6,13 +6,16 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
-
+from .permissions import IsFarmOwnerAdmin
 
 # Create your views here.
 class FarmView(APIView):
 
     def get(self,request):
-        farms=FarmModel.objects.all()
+        if request.user.is_staff:
+            farms=FarmModel.objects.all()
+        else:
+            farms=FarmModel.objects.filter(owner=request.user)
         ser=FarmListSerializer(farms,many=True)
         return Response(ser.data,status=status.HTTP_200_OK)
     
@@ -24,6 +27,7 @@ class FarmView(APIView):
         return Response(ser.errors,status=status.HTTP_400_BAD_REQUEST)
     
 class FarmDetailView(APIView):
+    permission_classes=[IsFarmOwnerAdmin]
 
     def get(self,request,pk):
 
