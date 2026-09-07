@@ -25,6 +25,7 @@ class FieldModel(models.Model):
     name=models.CharField(max_length=50)
     area=models.DecimalField(max_digits=8,decimal_places=2)
     crop_name=models.CharField(max_length=50)
+    image = models.ImageField(upload_to="fields/",blank=True,null=True)
     created_at=models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

@@ -8,7 +8,11 @@ from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
 from .permissions import IsFarmOwnerAdmin,IsFieldOwnerAdmin
 from rest_framework.throttling import UserRateThrottle,ScopedRateThrottle
+from rest_framework.pagination import PageNumberPagination
 
+class MyPagination(PageNumberPagination):
+    page_size=3
+    
 # Create your views here.
 class FarmView(APIView):
 
@@ -19,7 +23,10 @@ class FarmView(APIView):
             farms=FarmModel.objects.all()
         else:
             farms=FarmModel.objects.filter(owner=request.user)
-        ser=FarmListSerializer(farms,many=True)
+        paginator = PageNumberPagination()
+        paginator.page_size = 3
+        page = paginator.paginate_queryset(farms,request)
+        ser=FarmListSerializer(page,many=True)
         return Response(ser.data,status=status.HTTP_200_OK)
     
     def post(self,request):
@@ -81,6 +88,7 @@ class FarmDetailView(APIView):
 class FieldView(ModelViewSet):
 
     permission_classes=[IsFieldOwnerAdmin]
+    pagination_class=MyPagination
     throttle_classes=[ScopedRateThrottle]
     throttle_scope ='field'
 
