@@ -7,9 +7,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
 from .permissions import IsFarmOwnerAdmin,IsFieldOwnerAdmin
+from rest_framework.throttling import UserRateThrottle,ScopedRateThrottle
 
 # Create your views here.
 class FarmView(APIView):
+
+    throttle_classes=[UserRateThrottle]
 
     def get(self,request):
         if request.user.is_staff:
@@ -27,7 +30,9 @@ class FarmView(APIView):
         return Response(ser.errors,status=status.HTTP_400_BAD_REQUEST)
     
 class FarmDetailView(APIView):
+
     permission_classes=[IsFarmOwnerAdmin]
+    throttle_classes=[UserRateThrottle]
 
     def get(self,request,pk):
 
@@ -74,7 +79,11 @@ class FarmDetailView(APIView):
 
 
 class FieldView(ModelViewSet):
+
     permission_classes=[IsFieldOwnerAdmin]
+    throttle_classes=[ScopedRateThrottle]
+    throttle_scope ='field'
+
 
     def get_queryset(self):
         if self.request.user.is_staff:
