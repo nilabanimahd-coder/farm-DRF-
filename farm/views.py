@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
-from .permissions import IsFarmOwnerAdmin
+from .permissions import IsFarmOwnerAdmin,IsFieldOwnerAdmin
 
 # Create your views here.
 class FarmView(APIView):
@@ -74,6 +74,13 @@ class FarmDetailView(APIView):
 
 
 class FieldView(ModelViewSet):
+    permission_classes=[IsFieldOwnerAdmin]
 
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return FieldModel.objects.all()
+
+        return FieldModel.objects.filter(farm__owner=self.request.user)
+    
     queryset=FieldModel.objects.all()
     serializer_class=FieldSerializer
