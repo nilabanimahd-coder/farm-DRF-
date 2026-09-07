@@ -36,31 +36,34 @@ class FieldSerializer(serializers.ModelSerializer):
         return attrs
 
     area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
+    farm_name=serializers.StringRelatedField(source='farm',read_only=True)
 
     class Meta:
         model=FieldModel
-        fields=['id','name','area','crop_name','farm']
-        read_only_fields = ["id","created_at"]
+        fields=['id','name','area','crop_name','farm','farm_name']
+        read_only_fields = ["id","created_at","farm_name"]
 
 
 
 class FarmListSerializer(serializers.ModelSerializer):
 
     field_count=serializers.IntegerField(source="field.count",read_only=True)
+    owner_name = serializers.StringRelatedField(source='farm',read_only=True)
 
     class Meta:
         model=FarmModel
-        fields=['id','owner','name','area','location','field_count','created_at']
-        read_only_fields = ["id","owner","created_at","field_count"]
+        fields=['id','owner','owner_name','name','area','location','field_count','created_at']
+        read_only_fields = ["id","owner","owner_name","created_at","field_count"]
 
     
 class FarmDetaielSerializer(serializers.ModelSerializer):
 
+    owner_name = serializers.StringRelatedField(source='farm',read_only=True)
     area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
     field=FieldSerializer(many=True,read_only=True)
     field_count=serializers.IntegerField(source="field.count",read_only=True)
 
     class Meta:
         model=FarmModel
-        fields=['id','owner','name','area','location','field_count','field','created_at']
-        read_only_fields = ["id","owner","created_at","field_count"]
+        fields=['id','owner','owner_name','name','area','location','field_count','field','created_at']
+        read_only_fields = ["id","owner","owner_name","created_at","field_count"]
