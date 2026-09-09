@@ -10,7 +10,7 @@ class MinAreaValidator:
 
     def __call__(self, value):
         if value <= self.min_price:
-            raise serializers.ValidationError("price is not be 0")
+            raise serializers.ValidationError("area is not be 0")
         return value
 
 class FieldSerializer(serializers.ModelSerializer):
@@ -60,6 +60,7 @@ class FieldSerializer(serializers.ModelSerializer):
 
 class FarmListSerializer(serializers.ModelSerializer):
 
+    area=serializers.IntegerField(validators=[MinAreaValidator(0)])
     field_count=serializers.IntegerField(source="field.count",read_only=True)
     owner_name = serializers.StringRelatedField(source='owner',read_only=True)
 

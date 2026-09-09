@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 class FarmModel(models.Model):
     owner=models.ForeignKey(User,on_delete=models.CASCADE)
-    name=models.CharField(max_length=50,blank=True)
+    name=models.CharField(max_length=50)
     location=models.CharField(max_length=80)
     area=models.DecimalField(max_digits=8,decimal_places=2)
     created_at=models.DateTimeField(auto_now_add=True)

@@ -12,7 +12,7 @@ from rest_framework.pagination import PageNumberPagination
 
 class MyPagination(PageNumberPagination):
     page_size=3
-    
+
 # Create your views here.
 class FarmView(APIView):
 
@@ -78,7 +78,7 @@ class FarmDetailView(APIView):
             farm=get_object_or_404(FarmModel,id=pk)
         else :
             farm = get_object_or_404(FarmModel,id=pk,owner=request.user)
-        farm.delete(owner=request.user)
+        farm.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
