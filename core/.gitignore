@@ -1,0 +1,20 @@
+# Environment variables
+.env
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Django
+db.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Media uploads
+media/
+
+# VS Code
+.vscode/

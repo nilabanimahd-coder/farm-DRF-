@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from .serializers import  FarmListSerializer,FarmDetaielSerializer,FieldSerializer
+from .serializers import  FarmListSerializer,FarmDetailSerializer,FieldSerializer
 from .models import FarmModel,FieldModel
 from rest_framework import status
 from rest_framework.response import Response
@@ -17,16 +17,14 @@ class MyPagination(PageNumberPagination):
 class FarmView(APIView):
 
     throttle_classes=[UserRateThrottle]
+    pagination_class=MyPagination
 
     def get(self,request):
         if request.user.is_staff:
             farms=FarmModel.objects.all()
         else:
             farms=FarmModel.objects.filter(owner=request.user)
-        paginator = PageNumberPagination()
-        paginator.page_size = 3
-        page = paginator.paginate_queryset(farms,request)
-        ser=FarmListSerializer(page,many=True)
+        ser=FarmListSerializer(farms,many=True)
         return Response(ser.data,status=status.HTTP_200_OK)
     
     def post(self,request):
@@ -48,7 +46,7 @@ class FarmDetailView(APIView):
         else:
             farm = get_object_or_404(FarmModel, id=pk, owner=request.user)
         
-        ser=FarmDetaielSerializer(farm)
+        ser=FarmDetailSerializer(farm)
         return Response(ser.data,status=status.HTTP_200_OK)
 
     def put(self,request,pk):
@@ -56,7 +54,7 @@ class FarmDetailView(APIView):
             farm=get_object_or_404(FarmModel,id=pk)
         else :
             farm = get_object_or_404(FarmModel,id=pk,owner=request.user)
-        ser=FarmDetaielSerializer(farm,data=request.data)
+        ser=FarmDetailSerializer(farm,data=request.data)
         if ser.is_valid():
             ser.save(owner=request.user)
             return Response(ser.data,status=status.HTTP_200_OK)
@@ -67,7 +65,7 @@ class FarmDetailView(APIView):
             farm=get_object_or_404(FarmModel,id=pk)
         else :
             farm = get_object_or_404(FarmModel,id=pk,owner=request.user)
-        ser=FarmDetaielSerializer(farm,data=request.data,partial=True)
+        ser=FarmDetailSerializer(farm,data=request.data,partial=True)
         if ser.is_valid():
             ser.save(owner=request.user)
             return Response(ser.data,status=status.HTTP_200_OK)
@@ -97,7 +95,7 @@ class FieldView(ModelViewSet):
         if self.request.user.is_staff:
             return FieldModel.objects.all()
 
-        return FieldModel.objects.filter(farm__owner=self.request.user)
+        return FieldModel.objects.filter(farm_owner=self.request.user)
     
     queryset=FieldModel.objects.all()
     serializer_class=FieldSerializer

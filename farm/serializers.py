@@ -5,11 +5,11 @@ from .models import FarmModel,FieldModel
 
 class MinAreaValidator:
 
-    def __init__(self,min_price):
-        self.min_price=min_price
+    def __init__(self,min_area):
+        self.min_area=min_area
 
     def __call__(self, value):
-        if value <= self.min_price:
+        if value <= self.min_area:
             raise serializers.ValidationError("area is not be 0")
         return value
 
@@ -17,9 +17,7 @@ class FieldSerializer(serializers.ModelSerializer):
 
     def validate(self,attrs):
 
-        farm = attrs.get('farm')
-        if not farm and self.instance:
-            farm = self.instance.farm
+        farm = self.instance
 
         new_area = attrs.get('area')
 
@@ -34,17 +32,10 @@ class FieldSerializer(serializers.ModelSerializer):
         remaining_area = farm.area - used_area
 
         if new_area > remaining_area :
-           raise serializers.ValidationError("Area of fields cannot be greater than remaining farm area.")
+           raise serializers.ValidationError("Farm area cannot be less than the total area of its fields.")
     
         return attrs
-    
-    def get_image_url(self,obj):
-        request=self.context.get("request")
-    
-        if obj.image:
-             return request.build_absolute_uri(obj.image.url)
-    
-        return None
+
 
     
     area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
@@ -70,7 +61,25 @@ class FarmListSerializer(serializers.ModelSerializer):
         read_only_fields = ["id","owner","owner_name","created_at","field_count"]
 
     
-class FarmDetaielSerializer(serializers.ModelSerializer):
+class FarmDetailSerializer(serializers.ModelSerializer):
+
+    def validate(self,attrs):
+
+        field = attrs.get('field')
+        if not field and self.instance:
+            field = self.instance.farm
+
+        new_area = attrs.get('area')
+
+        if new_area is None and self.instance:
+            new_area = self.instance.area
+
+        used_area= sum(field.area for field in field.field.all())
+
+        if new_area > used_area :
+           raise serializers.ValidationError("Area of fields cannot be greater than remaining farm area.")
+    
+        return attrs
 
     owner_name = serializers.StringRelatedField(source='owner',read_only=True)
     area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
