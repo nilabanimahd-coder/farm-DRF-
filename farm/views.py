@@ -17,15 +17,16 @@ class MyPagination(PageNumberPagination):
 class FarmView(APIView):
 
     throttle_classes=[UserRateThrottle]
-    pagination_class=MyPagination
 
     def get(self,request):
         if request.user.is_staff:
             farms=FarmModel.objects.all()
         else:
             farms=FarmModel.objects.filter(owner=request.user)
-        ser=FarmListSerializer(farms,many=True)
-        return Response(ser.data,status=status.HTTP_200_OK)
+        paginator=MyPagination()
+        page=paginator.paginate_queryset(farms,request)
+        ser=FarmListSerializer(page,many=True)
+        return paginator.get_paginated_response(ser.data)
     
     def post(self,request):
         ser=FarmListSerializer(data=request.data)
@@ -36,13 +37,12 @@ class FarmView(APIView):
     
 class FarmDetailView(APIView):
 
-    permission_classes=[IsFarmOwnerAdmin]
     throttle_classes=[UserRateThrottle]
 
     def get(self,request,pk):
 
         if request.user.is_staff:
-            farm=FarmModel.objects.get(id=pk)
+            farm = get_object_or_404(FarmModel, id=pk)
         else:
             farm = get_object_or_404(FarmModel, id=pk, owner=request.user)
         
@@ -56,7 +56,7 @@ class FarmDetailView(APIView):
             farm = get_object_or_404(FarmModel,id=pk,owner=request.user)
         ser=FarmDetailSerializer(farm,data=request.data)
         if ser.is_valid():
-            ser.save(owner=request.user)
+            ser.save()
             return Response(ser.data,status=status.HTTP_200_OK)
         return Response(ser.errors,status=status.HTTP_400_BAD_REQUEST)
     
@@ -67,7 +67,7 @@ class FarmDetailView(APIView):
             farm = get_object_or_404(FarmModel,id=pk,owner=request.user)
         ser=FarmDetailSerializer(farm,data=request.data,partial=True)
         if ser.is_valid():
-            ser.save(owner=request.user)
+            ser.save()
             return Response(ser.data,status=status.HTTP_200_OK)
         return Response(ser.errors,status=status.HTTP_400_BAD_REQUEST)
     
@@ -95,7 +95,7 @@ class FieldView(ModelViewSet):
         if self.request.user.is_staff:
             return FieldModel.objects.all()
 
-        return FieldModel.objects.filter(farm_owner=self.request.user)
+        return FieldModel.objects.filter(farm__owner=self.request.user)
     
     queryset=FieldModel.objects.all()
     serializer_class=FieldSerializer
