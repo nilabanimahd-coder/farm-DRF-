@@ -16,30 +16,30 @@ class MinAreaValidator:
 class FieldSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
-        farm = attrs.get("farm")
+       farm = attrs.get("farm")
 
-        if farm is None and self.instance:
-            farm = self.instance.farm
+       if farm is None and self.instance:
+          farm = self.instance.farm
 
-        new_area = attrs.get("area")
+       new_area = attrs.get("area")
 
-        if new_area is None and self.instance:
-            new_area = self.instance.area
+       if new_area is None and self.instance:
+          new_area = self.instance.area
 
-        used_area = sum(
-            field.area
-            for field in farm.field.all()
-            if self.instance is None or field.pk != self.instance.pk
+       used_area = sum(
+          field.area
+          for field in farm.field.all()
+          if self.instance is None or field.pk != self.instance.pk
+         )
+
+       total_area = used_area + new_area
+
+       if total_area > farm.area:
+          raise serializers.ValidationError(
+            "Total field area cannot be greater than farm area."
         )
 
-        total_area = used_area + new_area
-
-        if total_area > farm.area:
-            raise serializers.ValidationError(
-                "Total field area cannot be greater than farm area."
-            )
-
-        return attrs
+       return attrs
 
 
 
@@ -57,9 +57,9 @@ class FieldSerializer(serializers.ModelSerializer):
 
 class FarmListSerializer(serializers.ModelSerializer):
 
-    area=serializers.IntegerField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
+    area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
     field_count=serializers.IntegerField(source="field.count",read_only=True)
-    owner_name = serializers.StringRelatedField(source='farm.owner',read_only=True)
+    owner_name = serializers.StringRelatedField(source='owner',read_only=True)
 
     class Meta:
         model=FarmModel
@@ -87,7 +87,7 @@ class FarmDetailSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    owner_name = serializers.StringRelatedField(source='farm.owner',read_only=True)
+    owner_name = serializers.StringRelatedField(source='owner',read_only=True)
     area=serializers.DecimalField(max_digits=8,decimal_places=2,validators=[MinAreaValidator(0)])
     field=FieldSerializer(many=True,read_only=True)
     field_count=serializers.IntegerField(source="field.count",read_only=True)
